@@ -1,0 +1,78 @@
+@startuml 01-without-state
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam roundcorner 8
+skinparam shadowing true
+skinparam packageStyle rectangle
+
+title Diagrama de Clases UML - Antes de Aplicar el Patrón State (Diseño Monolítico)
+
+package "Cliente / Aplicación" {
+    class Cliente {
+    }
+}
+
+package "Módulo Sin State (src/without-state)" {
+    enum OrderStatus <<enumeration>> {
+        + PENDING : "PENDIENTE"
+        + PREPARING : "PREPARANDO"
+        + READY : "LISTO"
+        + DELIVERED : "ENTREGADO"
+    }
+
+    class Order {
+        - id: string
+        - status: OrderStatus
+        __
+        + constructor(id: string)
+        + getId(): string
+        + getStatus(): OrderStatus
+        + prepare(): boolean
+        + markAsReady(): boolean
+        + deliver(): boolean
+    }
+
+    note right of Order::prepare
+        <b>Lógica monolítica (Violación de SRP y OCP):</b>
+        if (status == PENDING) {
+            status = PREPARING
+        } else if (status == PREPARING) {
+            // advertencia: ya en preparación
+        } else if (status == READY) {
+            // error: ya cocinado
+        } else if (status == DELIVERED) {
+            // error: pedido finalizado
+        }
+    end note
+
+    note right of Order::markAsReady
+        if (status == PREPARING) {
+            status = READY
+        } else if (status == PENDING) {
+            // error: debe prepararse primero
+        } ...
+    end note
+
+    note right of Order::deliver
+        if (status == READY) {
+            status = DELIVERED
+        } else if (status == PENDING || status == PREPARING) {
+            // error: no listo para entrega
+        } ...
+    end note
+}
+
+Cliente ..> Order : usa / interactúa
+Order o-- OrderStatus : tiene un
+
+note bottom of Order
+    <b>Problemas principales:</b>
+    1. Concentración de responsabilidades en una sola clase (Acoplamiento).
+    2. Acumulación excesiva de condicionales (if/else o switch).
+    3. Difícil de extender: añadir un nuevo estado (ej. "Cancelado")
+       obliga a modificar todos los métodos de Order.
+end note
+
+@enduml
+

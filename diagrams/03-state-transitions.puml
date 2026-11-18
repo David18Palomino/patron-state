@@ -1,0 +1,61 @@
+@startuml 03-state-transitions
+left to right direction
+skinparam monochrome false
+skinparam roundcorner 8
+skinparam shadowing true
+
+title Diagrama de Transición de Estados del Pedido
+
+[*] --> Pendiente : Creación de Order(id)
+
+state Pendiente {
+    Pendiente : Rechaza deliver()
+    Pendiente : Rechaza markAsReady()
+}
+
+state Preparando {
+    Preparando : Rechaza deliver()
+    Preparando : Advertencia prepare()
+}
+
+state Listo {
+    Listo : Rechaza prepare()
+    Listo : Advertencia markAsReady()
+}
+
+state Entregado {
+    Entregado : Rechaza prepare()
+    Entregado : Rechaza markAsReady()
+    Entregado : Advertencia deliver()
+}
+
+Pendiente --> Preparando : prepare() [Válido]
+Preparando --> Listo : markAsReady() [Válido]
+Listo --> Entregado : deliver() [Válido]
+
+Entregado --> [*] : Ciclo completado
+
+note right of Pendiente
+  Intentar deliver() o markAsReady()
+  mantiene el estado en Pendiente
+  y notifica rechazo al usuario.
+end note
+
+note right of Preparando
+  Intentar deliver() mantiene el
+  estado en Preparando (la comida
+  sigue en cocina).
+end note
+
+note right of Listo
+  Intentar prepare() es rechazado
+  porque la comida ya está lista.
+end note
+
+note right of Entregado
+  Cualquier operación posterior
+  es rechazada de forma controlada.
+end note
+
+@enduml
+

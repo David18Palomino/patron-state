@@ -1,0 +1,27 @@
+{
+  "name": "patron-state-pedidos-comida",
+  "version": "1.0.0",
+  "description": "Caso práctico del Patrón State en TypeScript: Sistema de Pedidos de Comida para Restaurante",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/index.js",
+    "demo:without-state": "tsc && node dist/without-state/index.js",
+    "demo:with-state": "tsc && node dist/with-state/index.js",
+    "test": "tsc && node dist/tests/run-all-tests.js"
+  },
+  "keywords": [
+    "design-patterns",
+    "state-pattern",
+    "typescript",
+    "clean-code",
+    "oop"
+  ],
+  "author": "David Palomino Ochoa",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "^5.7.2"
+  }
+}
+

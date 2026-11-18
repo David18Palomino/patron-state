@@ -1,0 +1,129 @@
+@startuml 02-with-state
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam roundcorner 8
+skinparam shadowing true
+skinparam packageStyle rectangle
+
+title Diagrama de Clases UML - Aplicando el Patrón State (Desacoplado y Polimórfico)
+
+package "Cliente / Aplicación" {
+    class Cliente {
+    }
+}
+
+package "Módulo Con State (src/with-state)" {
+
+    class Order <<Context>> {
+        - id: string
+        - state: OrderState
+        __
+        + constructor(id: string, initialState?: OrderState)
+        + getId(): string
+        + getState(): OrderState
+        + getStateName(): string
+        + setState(state: OrderState): void
+        + prepare(): void
+        + markAsReady(): void
+        + deliver(): void
+    }
+
+    interface OrderState <<Interface / State>> {
+        + prepare(order: Order): void
+        + markAsReady(order: Order): void
+        + deliver(order: Order): void
+        + getName(): string
+    }
+
+    class PendingState <<ConcreteState>> {
+        + prepare(order: Order): void
+        + markAsReady(order: Order): void
+        + deliver(order: Order): void
+        + getName(): string
+    }
+
+    class PreparingState <<ConcreteState>> {
+        + prepare(order: Order): void
+        + markAsReady(order: Order): void
+        + deliver(order: Order): void
+        + getName(): string
+    }
+
+    class ReadyState <<ConcreteState>> {
+        + prepare(order: Order): void
+        + markAsReady(order: Order): void
+        + deliver(order: Order): void
+        + getName(): string
+    }
+
+    class DeliveredState <<ConcreteState>> {
+        + prepare(order: Order): void
+        + markAsReady(order: Order): void
+        + deliver(order: Order): void
+        + getName(): string
+    }
+
+    note right of Order::prepare
+        <b>Delegación transparente:</b>
+        this.state.prepare(this);
+    end note
+
+    note right of Order::markAsReady
+        this.state.markAsReady(this);
+    end note
+
+    note right of Order::deliver
+        this.state.deliver(this);
+    end note
+
+    note bottom of PendingState
+        <b>Regla de PendingState:</b>
+        prepare() -> order.setState(new PreparingState())
+        markAsReady() -> Rechazado (debe prepararse)
+        deliver() -> Rechazado (aún pendiente)
+    end note
+
+    note bottom of PreparingState
+        <b>Regla de PreparingState:</b>
+        markAsReady() -> order.setState(new ReadyState())
+        prepare() -> Advertencia (ya preparando)
+        deliver() -> Rechazado (comida no lista)
+    end note
+
+    note bottom of ReadyState
+        <b>Regla de ReadyState:</b>
+        deliver() -> order.setState(new DeliveredState())
+        prepare() -> Rechazado (ya cocinada)
+        markAsReady() -> Advertencia (ya lista)
+    end note
+
+    note bottom of DeliveredState
+        <b>Regla de DeliveredState:</b>
+        prepare() -> Rechazado (ciclo finalizado)
+        markAsReady() -> Rechazado (ciclo finalizado)
+        deliver() -> Advertencia (ya entregado)
+    end note
+}
+
+' Relaciones UML
+Cliente ..> Order : interactúa con
+Order o--> "1" OrderState : - state (mantiene referencia y delega)
+
+OrderState <|.. PendingState : implements
+OrderState <|.. PreparingState : implements
+OrderState <|.. ReadyState : implements
+OrderState <|.. DeliveredState : implements
+
+' Transiciones entre estados concretos
+PendingState ..> PreparingState : crea y transiciona a
+PreparingState ..> ReadyState : crea y transiciona a
+ReadyState ..> DeliveredState : crea y transiciona a
+
+PendingState ..> Order : invoca setState()
+PreparingState ..> Order : invoca setState()
+ReadyState ..> Order : invoca setState()
+DeliveredState ..> Order : consulta id
+
+@enduml
+
